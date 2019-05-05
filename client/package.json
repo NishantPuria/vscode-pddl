@@ -39,7 +39,10 @@
     "onCommand:pddl.searchDebugger.start",
     "onView:pddl.planning.domains",
     "onView:pddl.tests.explorer",
-    "onView:pddl.planning.domains"
+    "onCommand:pddl.planning.domains.session.load",
+    "onView:pddl.planning.domains.session",
+    "onUri",
+    "onFileSystem:pddlsession"
   ],
   "main": "./out/client/src/extension",
   "contributes": {
@@ -106,6 +109,16 @@
       {
         "language": "pddl",
         "path": "./snippets/pddl.json"
+      }
+    ],
+    "resourceLabelFormatters": [
+      {
+        "scheme": "pddl-session",
+        "formatting": {
+          "label": "${path}",
+          "separator": "/",
+          "workspaceSuffix": "Planning.Domains Session"
+        }
       }
     ],
     "commands": [
@@ -252,6 +265,10 @@
       {
         "command": "pddl.configureValidate",
         "title": "PDDL: Configure VAL/Validate tool"
+      },
+      {
+        "command": "pddl.planning.domains.session.load",
+        "title": "PDDL: Load Planning.domains session"
       }
     ],
     "menus": {
@@ -638,6 +655,10 @@
         {
           "id": "pddl.planning.domains",
           "name": "Planning.domains"
+        },
+        {
+          "id": "pddl.planning.domains.session",
+          "name": "Planning.domains session"
         }
       ]
     },

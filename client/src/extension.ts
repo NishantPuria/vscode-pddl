@@ -25,6 +25,7 @@ import { toLanguage, isAnyPddl, createPddlExtensionContext } from './utils';
 import { HappeningsValidator } from './diagnostics/HappeningsValidator';
 import { PlanComparer } from './comparison/PlanComparer';
 import { Catalog } from './catalog/Catalog';
+import { PlanningDomainsSession } from './session/Session';
 
 import { initialize, instrumentOperation } from "vscode-extension-telemetry-wrapper";
 import { KEY } from './TelemetryInstrumentation';
@@ -166,6 +167,7 @@ function activateWithTelemetry(_operationId: string, context: ExtensionContext) 
 	new PTestExplorer(pddlContext, planning);
 
 	new Catalog(context);
+	new PlanningDomainsSession(context);
 
 	new Debugging(context, pddlWorkspace, pddlConfiguration);
 

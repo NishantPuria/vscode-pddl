@@ -10,6 +10,7 @@ import { CatalogEntry, Collection, Domain, Problem } from './CatalogEntry';
 export class PlanningDomains {
 
     public static readonly URL = "https://api.planning.domains/json/classical/";
+    static readonly SESSION_URL = "http://localhost:5000/";
 
     private parseCollection(collection_json: any): Collection {
         return new Collection(
@@ -58,6 +59,96 @@ export class PlanningDomains {
         return json_output
             .map((problem_json: any) => this.parseProblem(problem_json))
             .sort(compareCatalogEntry);
+    }
+
+    async getSession(sessionId: string): Promise<any> {
+        let url = `${PlanningDomains.SESSION_URL}session/${sessionId}`;
+        let json_output = await this.get(url);
+        return json_output;
+    }
+
+    createSessionFileUrl(sessionId: string, fileName: string): string {
+        return `${PlanningDomains.SESSION_URL}session/${sessionId}/${fileName}`;
+    }
+
+    async getSessionFile(sessionId: string, fileName: string): Promise<string> {
+        let url = this.createSessionFileUrl(sessionId, fileName);
+        return this.getText(url);
+    }
+
+    async putSessionFile(sessionId: string, fileName: string, content: string): Promise<string> {
+        let url = this.createSessionFileUrl(sessionId, fileName);
+        return new Promise<string>((resolve, reject) => {
+            request.put(url, { body: content }, (error: any, httpResponse: request.Response, body: any) => {
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    if (httpResponse && httpResponse.statusCode > 204) {
+                        reject("HTTP status code " + httpResponse.statusCode);
+                    }
+                    else {
+                        resolve(body);
+                    }
+                }
+            });
+        });
+    }
+
+    async postSessionFile(sessionId: string, fileName: string, content: string): Promise<string> {
+        let url = this.createSessionFileUrl(sessionId, fileName);
+        return new Promise<string>((resolve, reject) => {
+            request.post(url, { body: content }, (error: any, httpResponse: request.Response, body: any) => {
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    if (httpResponse && httpResponse.statusCode > 204) {
+                        reject("HTTP status code " + httpResponse.statusCode);
+                    }
+                    else {
+                        resolve(body);
+                    }
+                }
+            });
+        });
+    }
+
+    async deleteSessionFile(sessionId: string, fileName: string): Promise<void> {
+        let url = this.createSessionFileUrl(sessionId, fileName);
+        return new Promise<void>((resolve, reject) => {
+            request.delete(url, (error: any, httpResponse: request.Response) => {
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    if (httpResponse && httpResponse.statusCode > 204) {
+                        reject("HTTP status code " + httpResponse.statusCode);
+                    }
+                    else {
+                        resolve();
+                    }
+                }
+            });
+        });
+    }
+
+    private getText(url: string): string | PromiseLike<string> {
+        return new Promise<string>((resolve, reject) => {
+            request.get(url, (error: any, httpResponse: request.Response, body: any) => {
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    if (httpResponse && httpResponse.statusCode != 200) {
+                        reject("HTTP status code " + httpResponse.statusCode);
+                    }
+                    else {
+                        resolve(body);
+                    }
+                }
+            });
+        });
     }
 
     get(url: string): Promise<any> {
