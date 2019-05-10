@@ -12,7 +12,7 @@ import * as path from 'path';
 
 import { DomainInfo, TypeObjects } from '../../../common/src/parser';
 import { SwimLane } from '../../../common/src/SwimLane';
-import { PlanStep } from '../../../common/src/PlanStep';
+import { PlanStep, PlanStepCommitment } from '../../../common/src/PlanStep';
 import { HappeningType } from '../../../common/src/HappeningsInfo';
 import { Plan, HelpfulAction } from '../../../common/src/Plan';
 import { Util } from '../../../common/src/util';
@@ -218,7 +218,9 @@ ${lineCharts}
     }
 
     isPlanHeadStep(step: PlanStep, plan: Plan): boolean {
-        return plan.now === undefined || step.getStartTime() < plan.now;
+        return plan.now === undefined ||
+        step.commitment === PlanStepCommitment.Committed ||
+        step.commitment === PlanStepCommitment.EndsInRelaxedPlan;
     }
 
     createPlansChartsScript(plans: Plan[]) {
@@ -343,9 +345,23 @@ ${stepsInvolvingThisObject}
 
     computePlanHeadDuration(step: PlanStep, plan: Plan): number {
         if (plan.now === undefined) return step.getDuration();
-        else if (step.getEndTime() < plan.now) return step.getDuration();
+        else if (step.getEndTime() < plan.now) {
+            if (step.commitment == PlanStepCommitment.Committed) return step.getDuration();
+            else return 0; // the end was not committed yet
+        }
         else if (step.getStartTime() >= plan.now) return 0;
-        else return Math.min(step.getDuration(), plan.now - step.getStartTime());
+        else {
+            switch (step.commitment) {
+                case PlanStepCommitment.Committed:
+                    return step.getDuration();
+                case PlanStepCommitment.EndsInRelaxedPlan:
+                    return 0;
+                case PlanStepCommitment.StartsInRelaxedPlan:
+                    return plan.now - step.getStartTime();
+                default:
+                    return 0; // should not happen
+            }
+        }
     }
 
     computeWidth(step: PlanStep, plan: Plan): number {
